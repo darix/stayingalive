@@ -19,3 +19,40 @@
 
 include:
   - stayingalive.keepalived-common
+
+{%- set role_name = "important_gateway" %}
+{%- set role_selector = "I@role:" ~ role_name %}
+{%- set role_password_key = role_name ~ "/keepalived" %}
+
+keepalived:
+  authentication:
+    password: {{ role_password_key | gopass }}
+  # used for tracking if interfaces go down and switch to the other node
+  # this will be used for the unicast communication. the primary IPs from this interface will be used for communication
+  # in the case of IPv6 we will use the link local address
+  selector: {{ role_selector }}
+  vrrp_instances:
+    # so we can have multiple groups and instances
+    gateway:
+      vrrp_interface: internal
+      all_interfaces:
+      - internal
+      - dmz
+      - external
+      instances:
+      - protocol: v4
+        id: 55
+        vip: |
+          10.0.0.1/24 dev internal \
+          10.0.1.1/24 dev dmz \
+          10.0.2.1/24 dev external
+        vir: |
+          default via 10.0.2.254 dev external
+      - protocol: v6
+        id: 56
+        vip: |
+          fd00:dead:beef::0:1/32 dev internal \
+          fd00:dead:beef::1:1/32 dev dmz \
+          fd00:dead:beef::2:1/32 dev external
+        vir: |
+          default via fd00:dead:beef::ffff dev external
