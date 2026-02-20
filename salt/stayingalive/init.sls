@@ -48,16 +48,11 @@ keepalived_sysconfig:
     - pattern: KEEPALIVED_OPTIONS=".*"
     - repl: KEEPALIVED_OPTIONS="--log-detail --config-id={{ config_id }} --dump-conf --snmp"
 
-keepalived_systemd_config_dir:
-  file.directory:
-    - name: /etc/systemd/system/keepalived.service.d/
-    - user: root
-    - group: root
-    - mode: '0755'
 
 cleanup_old_keepalived_scripts_dir:
   file.absent:
     - name: /etc/dehydrated/keepalived-hooks/
+
 
 keepalived_scripts_dir:
   file.directory:
@@ -67,6 +62,7 @@ keepalived_scripts_dir:
     - mode: '0750'
     - require:
       - keepalived_packages
+
 
 keepalived_hooks:
   file.managed:
@@ -80,6 +76,7 @@ keepalived_hooks:
         - source: salt://{{ slspath }}/files/etc/keepalived/scripts/notify_master
       - /etc/keepalived/scripts/notify_fault_and_backup:
         - source: salt://{{ slspath }}/files/etc/keepalived/scripts/notify_fault_and_backup
+
 
 keepalived_service:
   service.running:
