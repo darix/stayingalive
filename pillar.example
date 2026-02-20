@@ -41,6 +41,7 @@ keepalived:
       - external
       instances:
       - protocol: v4
+        ## Important: IDs need to be globally unique!!!
         id: 55
         vip: |
           10.0.0.1/24 dev internal \
@@ -49,6 +50,7 @@ keepalived:
         vir: |
           default via 10.0.2.254 dev external
       - protocol: v6
+        ## Important: IDs need to be globally unique!!!
         id: 56
         vip: |
           fd00:dead:beef::0:1/32 dev internal \
