@@ -35,6 +35,7 @@ systemctl restart saltmaster
 ## How to use
 
 Follow pillar.example for your pillar settings.
+We recommend to also configure snmpd (code for this is not included here) for monitoring.
 
 ## License
 
