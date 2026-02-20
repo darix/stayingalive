@@ -1,3 +1,6 @@
+mine_functions:
+  network.interfaces:  []
+
 keepalived:
   authentication:
     type: 'PASS'
@@ -29,7 +32,6 @@ systemd:
 snmp:
   snmpd:
     config:
-      - "rocommunity public 127.0.0.1"
       - "master agentx"
       # silence the log spam
       - dontLogTCPWrappersConnects true
