@@ -1,0 +1,130 @@
+# {%- if 'greeting' in pillar %}{{ pillar['greeting'] }}{%- endif %}
+{%- set ka_pillar = pillar.keepalived %}
+{%- set router_id = ka_pillar.selector | regex_replace('role:(.*)', '\\1', ignorecase=True) %}
+! Configuration File for keepalived
+
+global_defs {
+   router_id {{ router_id }}
+
+   notification_email {
+{%- for email in ka_pillar.global.notification_emails %}
+    {{ email }}
+{%- endfor %}
+   }
+   notification_email_from keepalived+{{ grains.host }}@suse.de
+
+#   smtp_server {{ pillar.mail.relay }}
+   smtp_server 127.0.0.1
+{%- for option, value in ka_pillar.global.options.items() %}
+{%- if value == None %}
+{%- set value = '' %}
+{%- endif %}
+   {{ option }} {{ value }}
+{%- endfor %}
+}
+{%- if 'vrrp_scripts' in ka_pillar %}
+{%-   for script_name, script_data in ka_pillar.vrrp_scripts.items() %}
+vrrp_script {{ script_name }} {
+{%-      for setting_name, setting_value in script_data.items() %}
+{%-        if setting_value is string %}
+  {{ setting_name }} "{{ setting_value }}"
+{%-        else %}
+  {{ setting_name }} {{ setting_value }}
+{%-        endif %}
+{%-      endfor %}
+}
+{%-   endfor %}
+{%- endif %}
+
+# Important: for a SYNC group to run reliably, it is vital that all
+# instances in the group are MASTER or that they are all either BACKUP or
+# FAULT. A situation with half instances having higher  priority on
+# machine  A half others with higher priority on machine B will lead to
+# constant re-elections. For this reason, when instances are grouped, any
+# track scripts/files configured against member VRRP instances will have
+# their tracking weights automatically set to zero, in order to avoid
+# inconsistent priorities across instances.
+
+include macros.conf
+
+$AUTH_TYPE={{ ka_pillar.authentication.type }}
+$AUTH_PASS={{ ka_pillar.authentication.password }}
+
+{%- for instance_name, instance_data in ka_pillar.vrrp_instances.items() %}
+
+# shared among all instances but we can override it in theory
+$VRRP_INTERFACE={{ instance_data.vrrp_interface }}
+$INSTANCE_ID={{ instance_name }}
+
+  {%- for instance in instance_data.instances %}
+# defines specific to the current instance
+$IP_PROTOCOL={{ instance.protocol }}
+$ROUTER_ID={{   instance.id       }}
+
+   {%- for host, interfaces in salt['mine.get'](ka_pillar.selector, 'network.interfaces', tgt_type='pillar') | dictsort() %}
+     {%- if host is match('^[^.]+1\.') %}
+       {%- set var_name='$PRIMARY_IP' %}
+     {%- else %}
+       {%- set var_name='$SECONDARY_IP' %}
+     {%- endif %}
+     {%- if instance.protocol == 'v6' %}
+       {%- for ipv6_address in interfaces[instance_data.vrrp_interface]['inet6'] %}
+         {%- if ipv6_address.scope == 'link' %}
+{{ var_name }}={{ ipv6_address.address }}
+          {%- endif %}
+        {%- endfor %}
+      {%- else %}
+        {%- set address = interfaces[instance_data.vrrp_interface]['inet'][0]['address'] %}
+{{ var_name }}={{ address }}
+      {%- endif %}
+    {%- endfor %}
+
+$VIP= \
+{{ instance.vip }}
+{%- if 'vir' in instance %}
+$VIR= \
+{{ instance.vir }}
+{%- else %}
+$VIR=
+{%- endif %}
+{%- if 'virr' in instance %}
+$VIRR= \
+{{ instance.virr }}
+{%- else %}
+$VIRR=
+{%- endif %}
+# call the INSTANCE define from above. it will use all the variables we
+# have defined now and expand itself.
+$INSTANCE_PER_PROTOCOL
+
+  {%- endfor %}
+
+vrrp_sync_group VSG_{{ instance_name }} {
+   group {
+  {%- for instance in instance_data.instances %}
+     VI_{{ instance_name }}_{{ instance.protocol }}
+  {%- endfor %}
+   }
+  {%- if 'all_scripts' in ka_pillar.vrrp_instances[instance_name] %}
+   track_script {
+  {%- for script in ka_pillar.vrrp_instances[instance_name].all_scripts %}
+    {%- if script in ka_pillar.vrrp_scripts %}
+     {{ script }}
+    {%- else %}
+    # Script not found {{ script }}. Please make sure that vrrp_scripts and all_scripts match.
+    {%- endif %}
+  {%- endfor %}
+   }
+  {%- endif %}
+   track_interface {
+  {%- for interface in ka_pillar.vrrp_instances[instance_name].all_interfaces %}
+    {%- if instance_data.vrrp_interface != interface %}
+     {{ interface }}
+    {%- endif %}
+  {%- endfor %}
+   }
+    notify_master /etc/keepalived/scripts/notify_master           root root
+    notify_backup /etc/keepalived/scripts/notify_fault_and_backup root root
+    notify_fault  /etc/keepalived/scripts/notify_fault_and_backup root root
+}
+{% endfor %}

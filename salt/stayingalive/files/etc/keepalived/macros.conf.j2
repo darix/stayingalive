@@ -1,0 +1,37 @@
+# {%- if 'greeting' in pillar %}{{ pillar['greeting'] }}{%- endif %}
+$INSTANCE_PER_PROTOCOL= \
+vrrp_instance VI_${INSTANCE_ID}_${IP_PROTOCOL} { \
+    @primary  state MASTER \
+    @^primary state BACKUP \
+\
+    @primary   priority  110 \
+    @^primary  priority  100 \
+\
+    interface ${VRRP_INTERFACE} \
+    virtual_router_id ${ROUTER_ID} \
+\
+    advert_int 1 \
+    promote_secondaries \
+    notify /usr/bin/keepalived_notify_monitoring.sh root root\
+\
+    authentication { \
+        auth_type ${AUTH_TYPE} \
+        auth_pass ${AUTH_PASS} \
+    } \
+    @primary   unicast_src_ip ${PRIMARY_IP}   \
+    @secondary unicast_src_ip ${SECONDARY_IP} \
+    unicast_peer { \
+      @^primary    ${PRIMARY_IP}   \
+      @^secondary  ${SECONDARY_IP} \
+    } \
+\
+    virtual_ipaddress { \
+      ${VIP} \
+    } \
+    virtual_routes { \
+      ${VIR} \
+    } \
+    virtual_rules { \
+      ${VIRR} \
+    } \
+}

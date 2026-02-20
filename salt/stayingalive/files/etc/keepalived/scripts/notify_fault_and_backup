@@ -1,0 +1,9 @@
+#!/bin/bash
+
+NOT_PRIMARY_FILE=/run/dehydrated/keepalived_not_primary
+
+if [ -d /run/dehydrated ] ; then
+  touch "$NOT_PRIMARY_FILE"
+fi
+systemctl disable dehydrated.timer
+systemctl is-active dehydrated.service && systemctl stop dehydrated.service
