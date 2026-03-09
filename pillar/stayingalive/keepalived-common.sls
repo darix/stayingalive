@@ -17,9 +17,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-mine_functions:
-  network.interfaces:  []
-
 keepalived:
   authentication:
     type: 'PASS'
