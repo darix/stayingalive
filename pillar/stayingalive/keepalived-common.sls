@@ -41,6 +41,7 @@ keepalived:
       enable_snmp_vrrp:
       enable_snmp_rfc:
       smtp_connect_timeout: 30
+      snmp_socket: unix:/var/agentx/master
 
 systemd:
   overrides:
