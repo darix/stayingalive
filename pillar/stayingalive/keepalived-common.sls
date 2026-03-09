@@ -50,6 +50,5 @@ snmp:
   snmpd:
     config:
       - master agentx
-      - agentAddress unix:/run/agentx/master
       # silence the log spam
       - dontLogTCPWrappersConnects true
