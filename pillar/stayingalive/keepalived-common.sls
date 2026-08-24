@@ -50,5 +50,6 @@ snmp:
   snmpd:
     config:
       - master agentx
+      - agentXTimeout 5
       # silence the log spam
       - dontLogTCPWrappersConnects true
