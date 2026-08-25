@@ -35,21 +35,4 @@ keepalived:
       # received.
       # (default: don't skip)
       vrrp_skip_check_adv_addr:
-      enable_snmp_vrrp:
-      enable_snmp_rfc:
       smtp_connect_timeout: 30
-      snmp_socket: unix:/run/agentx/master
-
-systemd:
-  overrides:
-    keepalived.service:
-      Unit:
-        - After=snmpd.service
-
-snmp:
-  snmpd:
-    config:
-      - master agentx
-      - agentXTimeout 5
-      # silence the log spam
-      - dontLogTCPWrappersConnects true

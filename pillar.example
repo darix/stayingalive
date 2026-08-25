@@ -25,6 +25,11 @@ include:
 {%- set role_password_key = role_name ~ "/keepalived" %}
 
 keepalived:
+  #
+  # snmp agentx support is now disabled by default. if you want to reenable it
+  # include the stayingalive.snmp-agentx file
+  #
+  # use_snmp: False
   authentication:
     password: {{ role_password_key | gopass }}
   # used for tracking if interfaces go down and switch to the other node

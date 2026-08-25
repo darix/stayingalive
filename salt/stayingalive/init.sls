@@ -46,7 +46,11 @@ keepalived_sysconfig:
   file.replace:
     - name: /etc/sysconfig/keepalived
     - pattern: KEEPALIVED_OPTIONS=".*"
+    {%- if salt['pillar.get']("keepalived:use_snmp", False) %}
     - repl: KEEPALIVED_OPTIONS="--log-detail --config-id={{ config_id }} --dump-conf --snmp"
+    {%- else %}
+    - repl: KEEPALIVED_OPTIONS="--log-detail --config-id={{ config_id }} --dump-conf"
+    {%- endif %}
 
 
 cleanup_old_keepalived_scripts_dir:
