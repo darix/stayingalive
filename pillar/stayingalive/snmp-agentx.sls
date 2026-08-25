@@ -18,3 +18,8 @@ snmp:
       - agentXTimeout 5
       # silence the log spam
       - dontLogTCPWrappersConnects true
+
+{%- from 'stayingalive/helper.sls' import keepalived_config_id %}
+sysconfig:
+  keepalived:
+      keepalived_options: "--log-detail --config-id={{ keepalived_config_id() }} --dump-conf --snmp"

@@ -35,23 +35,6 @@ keepalived_config:
       - /etc/keepalived/keepalived.conf:
         - source: salt://{{ slspath }}/files/etc/keepalived/keepalived.conf.j2
 
-{%- set config_id='secondary' %}
-{%- if grains.get('fqdn') is match('^[^.]+1\.') %}
-  {%- set config_id='primary' %}
-{%- endif %}
-{%- if grains.get('id') is match('^[^.]+prg2\.') %}
-  {%- set config_id='primary' %}
-{%- endif %}
-keepalived_sysconfig:
-  file.replace:
-    - name: /etc/sysconfig/keepalived
-    - pattern: KEEPALIVED_OPTIONS=".*"
-    {%- if salt['pillar.get']("keepalived:use_snmp", False) %}
-    - repl: KEEPALIVED_OPTIONS="--log-detail --config-id={{ config_id }} --dump-conf --snmp"
-    {%- else %}
-    - repl: KEEPALIVED_OPTIONS="--log-detail --config-id={{ config_id }} --dump-conf"
-    {%- endif %}
-
 
 cleanup_old_keepalived_scripts_dir:
   file.absent:
@@ -87,7 +70,7 @@ keepalived_service:
     - enable: True
     - watch:
       - keepalived_config
-      - keepalived_sysconfig
+      - sysconfig_keepalived_KEEPALIVED_OPTIONS
     - require:
       - keepalived_hooks
     {%- if "dehydrated" in pillar and "certs" in pillar.dehydrated %}

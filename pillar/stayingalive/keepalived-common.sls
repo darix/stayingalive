@@ -36,3 +36,8 @@ keepalived:
       # (default: don't skip)
       vrrp_skip_check_adv_addr:
       smtp_connect_timeout: 30
+
+{%- from 'stayingalive/helper.sls' import keepalived_config_id %}
+sysconfig:
+  keepalived:
+      keepalived_options: "--log-detail --config-id={{ keepalived_config_id() }} --dump-conf"
