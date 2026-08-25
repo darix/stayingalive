@@ -1,0 +1,6 @@
+#!/bin/bash
+
+STATE_FILE=/run/keepalived_state
+echo "backup" > ${STATE_FILE}
+
+source /etc/keepalived/scripts/notify_fault_and_backup

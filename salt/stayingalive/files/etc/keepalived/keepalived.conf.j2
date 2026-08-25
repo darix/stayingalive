@@ -141,8 +141,8 @@ vrrp_sync_group VSG_{{ instance_name }} {
     {%- endif %}
   {%- endfor %}
    }
-    notify_master /etc/keepalived/scripts/notify_master           root root
-    notify_backup /etc/keepalived/scripts/notify_fault_and_backup root root
-    notify_fault  /etc/keepalived/scripts/notify_fault_and_backup root root
+    notify_master /etc/keepalived/scripts/notify_master root root
+    notify_backup /etc/keepalived/scripts/notify_backup root root
+    notify_fault  /etc/keepalived/scripts/notify_fault  root root
 }
 {% endfor %}
