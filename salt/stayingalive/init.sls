@@ -72,11 +72,10 @@ keepalived_hooks:
     - require:
       - keepalived_scripts_dir
     - names:
-      - /etc/keepalived/scripts/notify_master:
-        - source: salt://{{ slspath }}/files/etc/keepalived/scripts/notify_master
-      - /etc/keepalived/scripts/notify_fault_and_backup:
-        - source: salt://{{ slspath }}/files/etc/keepalived/scripts/notify_fault_and_backup
-
+      {%- for script in ["notify_master", "notify_fault", "notify_fault_and_backup", "notify_backup"] %}
+      - /etc/keepalived/scripts/{{ script }}:
+        - source: salt://{{ slspath }}/files/etc/keepalived/scripts/{{ script }}
+      {%- endfor %}
 
 keepalived_service:
   service.running:
