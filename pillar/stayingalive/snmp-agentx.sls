@@ -1,6 +1,8 @@
 keepalived:
   use_snmp: True
   global:
+    enable_snmp_vrrp:
+    enable_snmp_rfc:
     snmp_socket: unix:/run/agentx/master
 
 systemd:
