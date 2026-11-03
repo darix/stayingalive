@@ -29,6 +29,8 @@ keepalived:
       # Don't run scripts configured to be run as root if any part of the path
       # is writable by a non-root user.
       enable_script_security:
+      # enable DBus interface to enable querying the DBUS for the state
+      enable_dbus:
       # Checking all the addresses in a received VRRP advert can be time
       # consuming. Setting this flag means the check won't be carried out
       # if the advert is from the same master router as the previous advert
